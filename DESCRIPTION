@@ -1,0 +1,17 @@
+Package: SA23204192
+Type: Package
+Title: Functions for 'Statistical Computing' course
+Version: 1.0
+Date: 2023-12-10
+Author: Zhiheng Qi
+Maintainer: Zhiheng Qi <qizhiheng0208@163.com>
+Description: Several R and Rcpp function are included in this package for illustration.
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.11), microbenchmark, bootstrap, boot, DAAG
+LinkingTo: Rcpp
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
+URL: http://github.com/23204192/SA23204192
+BugReports: http://github.com/23204192/SA23204192/issues

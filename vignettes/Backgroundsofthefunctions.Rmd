@@ -1,0 +1,100 @@
+---
+title: "BackgroundsoftheFunctions"
+author: "SA23204192"
+date: "2023-11-27"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BackgroundsoftheFunctions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# rjmc
+
+## Introduction
+
+When modeling count data, one question that is often of interest is whether the data is too dispersed for a Poisson distribution. If it is too dispersed, it may be more appropriate to use a negative binomial distribution to fit, so for a given data y, the reversible jump MCMC method is used for model selection. That's what this function rjmc does.
+
+## Backgrounds of rjmc
+
+Given the i.i.d. samples y with size n, the likelihood function under a Poisson distribution with $\lambda > 0$ is:
+
+$$
+L(y|\lambda) = \prod^n_{i=1} \frac{\lambda^{y_i}}{y_i!}e^{-\lambda_iy_i}
+$$
+but with $\lambda > 0,\kappa > 0$ likelihood function of negative binomial distribution is
+
+$$
+L(y|\lambda,\kappa) = \prod^n_{i=1} \frac{\lambda^{y_i}}{y_i!} \frac{\Gamma(1/\kappa+y_i)}{\Gamma(1/\kappa)(1/\kappa+\lambda)^{y_i}}(1+\kappa\lambda)^{-1/\kappa}
+$$
+Poisson distribution and negative binomial distribution have the same mean value, but the variance of the negative binomial distribution is $\lambda(1+\kappa\lambda)$ , therefore, it is more suitable for excessively dispersed data.
+
+Suppose that the prior distributions of the two models indicate variables are $P(k=1) = P(k=2) = 0.5$ . Parameter $\theta_1=\lambda$ and $\theta_2=(\theta_{21},\theta_{22})=(\lambda,\kappa)$ prior distribution are $\theta_1,\theta_{21} \sim \Gamma(\alpha_\lambda,\beta_\lambda)$ and $\theta_{22} \sim \Gamma(\alpha_\kappa,\beta_\kappa)$ . So we have the posterior distribution
+
+$$
+\pi(k,\theta_{k}|y) \propto 
+\left\{
+\begin{aligned}
+    0.5p(\theta_1|k=1)L(y|\theta_1) ,k=1\\
+    0.5p(\theta_{21},\theta_{22}|k=2)L(y|\theta_2),k=2
+\end{aligned}
+\right.
+$$
+where $p(\theta_1|k=1)=\gamma(\theta_1,\alpha_\lambda,\beta_\lambda),p(\theta_{21},\theta_{22}|k=2)=\gamma(\theta_{21},\alpha_\lambda,\beta_\lambda)\gamma(\theta_{22},\alpha_\kappa,\beta_\kappa)$ , and $\gamma(\cdot,\alpha,\beta)$ is density function of $\Gamma(\alpha,\beta)$ .
+
+Let's construct a suitable transition from model 1 to model 2. Let's call $x=(1,\theta)$ is the state of the current chain, since there are no equivalent components in model 1 with $\kappa$ , we take an independent approach here. Specifically, we generate u from the $N(0,\sigma^2)$ , where the $\sigma^2$ is fixed, and $N(0,\sigma^2)$ density is denoted by g , make $x'=(2,\theta')$ , where $\theta'=(\theta_1',\theta_2')=\phi(\theta,u)=(\theta,\mu e^u)$ and $\mu$ is fixed. 
+
+In other words, the $\lambda$ stays the same in the transformation, and $\kappa$ is a lognormal random variable, so the Jacobian determinant of the transformation has a value of
+
+$$
+|J|=
+\begin{vmatrix}
+    \frac{\partial \theta'_1}{\partial \theta} & \frac{\partial \theta'_1}{\partial u}\\
+    \frac{\partial \theta'_2}{\partial \theta} & \frac{\partial \theta'_2}{\partial u}
+\end{vmatrix}
+=\mu e^u
+$$
+
+Now let's look at the transition from model 2 to model 1. Make $(\theta,u)=\phi'(\theta')=(\theta'_1,ln(\theta_2'/u))$ . So the probability of acceptance from model 1 to model 2 is $min\{ 1, A_{12}\}$ , where
+
+$$
+A_{12}=\frac{\pi(2,\theta'|y)}{\pi(1,\theta|y)}(\frac{1}{\sqrt{2\pi}\sigma}exp\{ -\frac{u^2}{2\sigma^2} \})^{-1} \mu e^u
+$$
+
+And the probability of acceptance from model 2 to model 1 is $min\{ 1, A_{21}\}$ , where
+
+$$
+A_{21}=\frac{\pi(1,\theta|y)}{\pi(2,\theta'|y)}(\frac{1}{\sqrt{2\pi}\sigma}exp\{ -\frac{[ln(\theta'_2/\mu)]^2}{2\sigma^2} \}) \frac{1}{\theta_2'}
+$$
+
+This is a demonstration of the principle of function code, where the function variable is the same as the variable name in the derivation process.
+
+# Gibbs
+
+## Backgrounds of Gibbs
+
+Gibbs algorithm, or Gibbs sampling, is a probabilistic sampling method used in statistics and machine learning. It is named after the American physicist Josiah Willard Gibbs. The algorithm is commonly used for drawing samples from high-dimensional probability distributions, especially when direct sampling is difficult or impractical.
+
+The Gibbs algorithm is based on the concept of conditional probability. It iteratively samples values for each variable in a multivariate distribution from its conditional distribution, given the values of the other variables. By repeatedly updating the values of each variable based on its conditional distribution, the algorithm eventually converges to samples that approximate the joint distribution of all variables.
+
+The steps of the Gibbs algorithm can be summarized as follows:
+
+1. Initialize the values of all variables in the distribution.
+
+2. For each iteration:
+
+a. Select a variable.
+
+b. Sample a new value for the selected variable from its conditional distribution, given the current values of the other variables.
+
+c. Update the value of the selected variable.
+
+3. Repeat the iterations until convergence or a sufficient number of samples are obtained.
+
+Gibbs sampling is particularly useful in Bayesian inference, where it is used to approximate the posterior distribution of model parameters. It has applications in various fields, including data analysis, image processing, and natural language processing.
+
+Overall, Gibbs algorithm provides a flexible and efficient approach for sampling from complex probability distributions and has become a fundamental tool in statistical modeling and inference.
